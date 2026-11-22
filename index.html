@@ -713,39 +713,85 @@
       reader.readAsArrayBuffer(file);
     }
 
+function handleFileUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const fb = document.getElementById('uploadFeedbackText');
+      fb.classList.remove('hidden');
+      fb.innerText = `Reading file: ${file.name}...`;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          const data = new Uint8Array(evt.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          
+          let targetSheet = workbook.SheetNames[0];
+          let rows = [];
+
+          for (let sName of workbook.SheetNames) {
+            const tempRows = XLSX.utils.sheet_to_json(workbook.Sheets[sName], { header: 1, defval: "" });
+            if (tempRows && tempRows.length > rows.length) {
+              rows = tempRows;
+              targetSheet = sName;
+            }
+          }
+
+          if (!rows || rows.length < 2) {
+            alert("No data found in uploaded file.");
+            fb.innerText = "Error: File contains no data rows.";
+            return;
+          }
+
+          fb.innerText = `Analyzing sheet "${targetSheet}" with ${rows.length} rows...`;
+          processImportedRows(rows);
+        } catch(err) {
+          alert("Error parsing Excel file: " + err);
+          fb.innerText = "Error: " + err;
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
     function processImportedRows(rows) {
       const fb = document.getElementById('uploadFeedbackText');
       
-      // Auto-scan first 10 rows to find which row has the headers!
+      const has = (cell, text) => {
+        if (!cell) return false;
+        return String(cell).replace(/[\r\n]+/g, ' ').trim().toLowerCase().includes(text);
+      };
+
       let headerRowIndex = -1;
       let idxAcc = -1, idxName = -1, idxMobile = -1, idxScheme = -1, idxInst = -1, idxReceipt = -1, idxAmount = -1;
 
       for (let r = 0; r < Math.min(10, rows.length); r++) {
-        const line = rows[r].map(cell => String(cell || '').replace(/[\r\n]+/g, ' ').trim().toLowerCase());
-        const acc = line.findIndex(h => h.includes('scheme account') || h.includes('account number') || h === 'account no');
+        const line = rows[r];
+        if (!line || !Array.isArray(line)) continue;
+
+        const acc = line.findIndex(h => has(h, 'scheme account') || has(h, 'account number') || has(h, 'account no'));
         if (acc !== -1) {
           headerRowIndex = r;
           idxAcc = acc;
-          idxName = line.findIndex(h => h.includes('customer name') || h.includes('name'));
-          idxMobile = line.findIndex(h => h.includes('mobile') || h.includes('phone'));
-          idxScheme = line.findIndex(h => h.includes('scheme type') || h.includes('scheme'));
-          idxInst = line.findIndex(h => h.includes('total installments') || h.includes('installment'));
-          idxReceipt = line.findIndex(h => h.includes('receipt'));
-          idxAmount = line.findIndex(h => h.includes('emi') || h.includes('amount'));
+          idxName = line.findIndex(h => has(h, 'customer name') || has(h, 'name'));
+          idxMobile = line.findIndex(h => has(h, 'mobile') || has(h, 'phone'));
+          idxScheme = line.findIndex(h => has(h, 'scheme type') || has(h, 'scheme'));
+          idxInst = line.findIndex(h => has(h, 'total installments') || has(h, 'installment'));
+          idxReceipt = line.findIndex(h => has(h, 'receipt'));
+          idxAmount = line.findIndex(h => has(h, 'emi') || has(h, 'amount'));
           break;
         }
       }
 
-      // If headers not found by text, fallback to standard column positions!
       if (headerRowIndex === -1) {
-        headerRowIndex = 0; // Assume Row 0
-        idxAcc = 2; // Column C is Scheme Account Number
-        idxScheme = 1; // Column B is Scheme Type
-        idxReceipt = 4; // Column E
-        idxAmount = 5; // Column F
-        idxName = 9; // Column J
-        idxMobile = 10; // Column K
-        idxInst = 11; // Column L
+        headerRowIndex = 0;
+        idxScheme = 1;  
+        idxAcc = 2;     
+        idxReceipt = 4; 
+        idxAmount = 5;  
+        idxName = 9;    
+        idxMobile = 10; 
+        idxInst = 11;   
       }
 
       let newCount = 0, existingCount = 0, advanceCount = 0;
@@ -756,8 +802,7 @@
         if (!r || !r[idxAcc]) continue;
 
         const acc = String(r[idxAcc]).trim();
-        // Skip total rows
-        if (acc.toLowerCase().includes('total')) continue;
+        if (!acc || acc.toLowerCase().includes('total')) continue;
 
         const name = r[idxName] ? String(r[idxName]).trim() : "Walk-in Customer";
         const mobile = r[idxMobile] ? String(r[idxMobile]).trim() : "";
@@ -785,12 +830,12 @@
           installmentsPaid: inst,
           receipt,
           amount,
-          date: r[0] || new Date().toLocaleDateString('en-GB')
+          date: r[0] ? String(r[0]).trim() : new Date().toLocaleDateString('en-GB')
         });
       }
 
       if (pendingBatchRows.length === 0) {
-        alert("Found header row, but no valid customer rows below it. Please check the file.");
+        alert("Found headers, but no valid customer rows below them.");
         fb.innerText = "No customer rows found.";
         return;
       }
