@@ -754,7 +754,7 @@ function handleFileUpload(e) {
       reader.readAsArrayBuffer(file);
     }
 
-    function processImportedRows(rows) {
+   function processImportedRows(rows) {
       const fb = document.getElementById('uploadFeedbackText');
       
       const has = (cell, text) => {
@@ -763,8 +763,9 @@ function handleFileUpload(e) {
       };
 
       let headerRowIndex = -1;
-      let idxAcc = -1, idxName = -1, idxMobile = -1, idxScheme = -1, idxInst = -1, idxReceipt = -1, idxAmount = -1;
+      let idxAcc = -1, idxName = -1, idxMobile = -1, idxScheme = -1, idxInst = -1, idxReceipt = -1, idxAmount = -1, idxMode = -1, idxRef = -1;
 
+      // Scan first 10 rows for headers
       for (let r = 0; r < Math.min(10, rows.length); r++) {
         const line = rows[r];
         if (!line || !Array.isArray(line)) continue;
@@ -779,19 +780,25 @@ function handleFileUpload(e) {
           idxInst = line.findIndex(h => has(h, 'total installments') || has(h, 'installment'));
           idxReceipt = line.findIndex(h => has(h, 'receipt'));
           idxAmount = line.findIndex(h => has(h, 'emi') || has(h, 'amount'));
+          // 🔴 FIXED: Now properly looks for Mode of Payment and Ref No!
+          idxMode = line.findIndex(h => has(h, 'mode of payment') || has(h, 'payment mode') || has(h, 'mode'));
+          idxRef = line.findIndex(h => has(h, 'mop ref') || has(h, 'ref no') || has(h, 'reference'));
           break;
         }
       }
 
+      // Fallback column positions if header text is not found
       if (headerRowIndex === -1) {
         headerRowIndex = 0;
-        idxScheme = 1;  
-        idxAcc = 2;     
-        idxReceipt = 4; 
-        idxAmount = 5;  
-        idxName = 9;    
-        idxMobile = 10; 
-        idxInst = 11;   
+        idxScheme = 1;  // Column B
+        idxAcc = 2;     // Column C
+        idxReceipt = 4; // Column E
+        idxAmount = 5;  // Column F
+        idxMode = 8;    // Column I (Mode of payment)
+        idxName = 9;    // Column J
+        idxMobile = 10; // Column K
+        idxInst = 11;   // Column L
+        idxRef = 14;    // Column O
       }
 
       let newCount = 0, existingCount = 0, advanceCount = 0;
@@ -813,6 +820,13 @@ function handleFileUpload(e) {
         const receipt = r[idxReceipt] ? String(r[idxReceipt]).trim() : "";
         const amount = parseFloat(r[idxAmount]) || 0;
 
+        // 🔴 CAPTURE ACTUAL PAYMENT MODE & REF NO (Clean line breaks)
+        const paymentMode = (idxMode !== -1 && r[idxMode]) 
+          ? String(r[idxMode]).replace(/[\r\n]+/g, ' ').trim() 
+          : "Cash";
+
+        const refNo = (idxRef !== -1 && r[idxRef]) ? String(r[idxRef]).trim() : "-";
+
         const existing = customers.find(c => c.accountNumber === acc);
         if (existing) {
           existingCount++;
@@ -830,6 +844,8 @@ function handleFileUpload(e) {
           installmentsPaid: inst,
           receipt,
           amount,
+          paymentMode,
+          refNo,
           date: r[0] ? String(r[0]).trim() : new Date().toLocaleDateString('en-GB')
         });
       }
@@ -878,6 +894,8 @@ function handleFileUpload(e) {
           monthPaid: row.installmentsPaid,
           receiptNumber: row.receipt,
           amount: row.amount,
+          paymentMode: row.paymentMode, // 🔴 Preserves SBI Card, GPay, etc.
+          refNo: row.refNo,
           markedBy: activeStaff
         });
       });
@@ -894,7 +912,7 @@ function handleFileUpload(e) {
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify({ action: "BATCH_SYNC", batch: pendingBatchRows })
           });
-          alert(`✅ Success! Synced ${pendingBatchRows.length} records directly to Google Sheets!`);
+          alert(`✅ Success! Synced ${pendingBatchRows.length} records with correct payment modes directly to Google Sheets!`);
         } catch(e) {
           alert("Error: " + e);
         }
