@@ -5,13 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Jos Alukkas India Private Limited – Tenkasi Scheme Master</title>
   
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  
-  <!-- SheetJS for real Excel (.xlsx & .csv) parsing -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  
-  <!-- jsPDF & AutoTable for PDF export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 
@@ -41,10 +36,8 @@
 </head>
 <body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col">
 
-  <!-- ================= TOP SHOWROOM HEADER ================= -->
   <header class="bg-ja-maroon text-white sticky top-0 z-40 border-b-2 border-ja-gold shadow-md">
     <div class="max-w-7xl mx-auto px-4 py-2.5 flex flex-wrap justify-between items-center gap-3">
-      
       <div class="flex items-center space-x-3">
         <div class="w-10 h-10 rounded-full bg-ja-gold flex items-center justify-center text-ja-darkMaroon font-black text-lg shadow-sm">
           JA
@@ -57,48 +50,28 @@
         </div>
       </div>
 
-      <!-- Staff Incharge Selector -->
       <div class="flex items-center space-x-2 bg-ja-darkMaroon px-3 py-1.5 rounded-lg border border-ja-gold/30">
         <span class="text-xs text-amber-200 font-medium">Scheme Incharge:</span>
-        <select id="activeStaffSelector" onchange="changeActiveStaff()" class="bg-ja-maroon text-white text-xs font-bold rounded px-2.5 py-1 border border-ja-gold/40 focus:outline-none">
-          <!-- Loaded dynamically from Google Sheets -->
-        </select>
+        <select id="activeStaffSelector" onchange="changeActiveStaff()" class="bg-ja-maroon text-white text-xs font-bold rounded px-2.5 py-1 border border-ja-gold/40 focus:outline-none"></select>
       </div>
-
     </div>
   </header>
 
-  <!-- ================= NAVIGATION TABS (7 TABS) ================= -->
   <nav class="bg-white border-b border-slate-200 sticky top-[61px] z-30 shadow-xs">
     <div class="max-w-7xl mx-auto px-4 flex space-x-1 overflow-x-auto text-xs">
-      <button onclick="switchTab('dashboard')" id="tabBtn-dashboard" class="py-3 px-4 border-b-2 border-ja-maroon text-ja-maroon font-bold whitespace-nowrap">
-        📊 1. Dashboard
-      </button>
-      <button onclick="switchTab('customers')" id="tabBtn-customers" class="py-3 px-4 border-b-2 border-transparent text-slate-600 hover:text-ja-maroon font-semibold whitespace-nowrap">
-        👥 2. Customer Master
-      </button>
-      <button onclick="switchTab('payments')" id="tabBtn-payments" class="py-3 px-4 border-b-2 border-transparent text-slate-600 hover:text-ja-maroon font-semibold whitespace-nowrap">
-        💳 3. Payment Tracking
-      </button>
-      <button onclick="switchTab('followup')" id="tabBtn-followup" class="py-3 px-4 border-b-2 border-transparent text-slate-600 hover:text-ja-maroon font-semibold whitespace-nowrap">
-        📞 4. Customer Follow-up
-      </button>
-      <button onclick="switchTab('staff')" id="tabBtn-staff" class="py-3 px-4 border-b-2 border-transparent text-slate-600 hover:text-ja-maroon font-semibold whitespace-nowrap">
-        👩‍💼 5. Scheme Staff
-      </button>
-      <button onclick="switchTab('reports')" id="tabBtn-reports" class="py-3 px-4 border-b-2 border-transparent text-slate-600 hover:text-ja-maroon font-semibold whitespace-nowrap">
-        📄 6. Reports & Exports
-      </button>
-      <button onclick="switchTab('settings')" id="tabBtn-settings" class="py-3 px-4 border-b-2 border-transparent text-slate-600 hover:text-ja-maroon font-semibold whitespace-nowrap">
-        ⚙️ 7. Settings
-      </button>
+      <button onclick="switchTab('dashboard')" id="tabBtn-dashboard" class="py-3 px-4 border-b-2 border-ja-maroon text-ja-maroon font-bold whitespace-nowrap">📊 1. Dashboard</button>
+      <button onclick="switchTab('customers')" id="tabBtn-customers" class="py-3 px-4 border-b-2 border-transparent text-slate-600 hover:text-ja-maroon font-semibold whitespace-nowrap">👥 2. Customer Master</button>
+      <button onclick="switchTab('payments')" id="tabBtn-payments" class="py-3 px-4 border-b-2 border-transparent text-slate-600 hover:text-ja-maroon font-semibold whitespace-nowrap">💳 3. Payment Tracking</button>
+      <button onclick="switchTab('followup')" id="tabBtn-followup" class="py-3 px-4 border-b-2 border-transparent text-slate-600 hover:text-ja-maroon font-semibold whitespace-nowrap">📞 4. Customer Follow-up</button>
+      <button onclick="switchTab('staff')" id="tabBtn-staff" class="py-3 px-4 border-b-2 border-transparent text-slate-600 hover:text-ja-maroon font-semibold whitespace-nowrap">👩‍💼 5. Scheme Staff</button>
+      <button onclick="switchTab('reports')" id="tabBtn-reports" class="py-3 px-4 border-b-2 border-transparent text-slate-600 hover:text-ja-maroon font-semibold whitespace-nowrap">📄 6. Reports & Exports</button>
+      <button onclick="switchTab('settings')" id="tabBtn-settings" class="py-3 px-4 border-b-2 border-transparent text-slate-600 hover:text-ja-maroon font-semibold whitespace-nowrap">⚙️ 7. Settings</button>
     </div>
   </nav>
 
-  <!-- ================= MAIN WORKSPACE ================= -->
   <main class="flex-1 max-w-7xl mx-auto w-full p-4 md:p-6">
 
-    <!-- ==================== TAB 1: DASHBOARD ==================== -->
+    <!-- TAB 1: DASHBOARD -->
     <section id="view-dashboard" class="space-y-6">
       <div class="grid grid-cols-2 md:grid-cols-5 gap-3.5">
         <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
@@ -126,7 +99,7 @@
         </div>
 
         <div class="bg-white p-4 rounded-xl border border-red-200 shadow-sm bg-red-50/20">
-          <div class="text-[11px] font-bold text-red-800 uppercase tracking-wider">Pending Dues</div>
+          <div class="text-[11px] font-bold text-red-800 uppercase tracking-wider">Pending This Month</div>
           <div class="text-2xl font-black text-red-600 mt-1" id="dashPendingCount">0</div>
           <div class="text-[10px] text-slate-400">Unpaid for current cycle</div>
         </div>
@@ -142,31 +115,23 @@
         </div>
         <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-2">
           <h3 class="font-bold text-sm text-ja-maroon border-b pb-2">🌙 Nighttime Excel / CSV Sync</h3>
-          <p class="text-xs text-slate-600">Drop your daily showroom export in Tab 3. The scanner auto-detects headers and syncs to Google Sheets.</p>
+          <p class="text-xs text-slate-600">Drop your daily showroom export in Tab 3. Captures all payment modes, advance payments, and new joiners.</p>
         </div>
       </div>
     </section>
 
-    <!-- ==================== TAB 2: CUSTOMER MASTER ==================== -->
+    <!-- TAB 2: CUSTOMER MASTER -->
     <section id="view-customers" class="hidden space-y-4">
       <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-wrap justify-between items-center gap-3">
         <div class="flex items-center space-x-2 flex-1 min-w-[280px]">
-          <input 
-            type="text" 
-            id="custSearch" 
-            oninput="renderCustomerMaster()" 
-            placeholder="🔍 Search Customer Name, Mobile, or Account No..." 
-            class="border border-slate-300 rounded-lg px-3.5 py-2 text-xs w-full max-w-md focus:ring-2 focus:ring-ja-maroon focus:outline-none" 
-          />
+          <input type="text" id="custSearch" oninput="renderCustomerMaster()" placeholder="🔍 Search Customer Name, Mobile, or Account No..." class="border border-slate-300 rounded-lg px-3.5 py-2 text-xs w-full max-w-md focus:outline-none" />
           <select id="custSchemeFilter" onchange="renderCustomerMaster()" class="border border-slate-300 rounded-lg px-3 py-2 text-xs bg-white">
             <option value="ALL">All Scheme Types</option>
             <option value="Weight Scheme">Weight Scheme (11M)</option>
             <option value="Bonus Scheme">Bonus Scheme (12M)</option>
           </select>
         </div>
-        <div class="text-xs text-slate-500">
-          Total Customers: <b id="custCountText" class="text-ja-maroon font-bold">0</b>
-        </div>
+        <div class="text-xs text-slate-500">Total Customers: <b id="custCountText" class="text-ja-maroon font-bold">0</b></div>
       </div>
 
       <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
@@ -190,10 +155,8 @@
       </div>
     </section>
 
-    <!-- ==================== TAB 3: PAYMENT TRACKING ==================== -->
+    <!-- TAB 3: PAYMENT TRACKING -->
     <section id="view-payments" class="hidden space-y-6">
-
-      <!-- Daytime Quick Pay -->
       <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
         <div class="border-b pb-3 flex flex-wrap justify-between items-center gap-2">
           <div>
@@ -206,15 +169,8 @@
         </div>
 
         <div class="flex gap-2 max-w-xl">
-          <input 
-            type="text" 
-            id="quickPaySearch" 
-            placeholder="Type Scheme Account No or Mobile (e.g. WS0073503)..." 
-            class="flex-1 border border-slate-300 rounded-lg px-3.5 py-2 text-xs uppercase font-mono focus:ring-2 focus:ring-ja-maroon focus:outline-none" 
-          />
-          <button onclick="lookupQuickPay()" class="bg-ja-maroon hover:bg-ja-darkMaroon text-white font-bold px-5 py-2 rounded-lg text-xs shadow-sm">
-            Find Customer
-          </button>
+          <input type="text" id="quickPaySearch" placeholder="Type Scheme Account No or Mobile..." class="flex-1 border border-slate-300 rounded-lg px-3.5 py-2 text-xs uppercase font-mono" />
+          <button onclick="lookupQuickPay()" class="bg-ja-maroon hover:bg-ja-darkMaroon text-white font-bold px-5 py-2 rounded-lg text-xs shadow-sm">Find Customer</button>
         </div>
 
         <div id="quickPayCard" class="hidden p-4 bg-ja-goldLight border border-ja-goldBorder rounded-xl max-w-xl flex justify-between items-center">
@@ -225,31 +181,25 @@
           </div>
           <div>
             <button onclick="confirmDaytimePayment()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-2.5 rounded-xl shadow text-xs flex items-center space-x-1.5">
-              <span>PAID</span>
-              <span class="text-sm">✓</span>
+              <span>PAID</span><span class="text-sm">✓</span>
             </button>
           </div>
         </div>
       </div>
 
-      <!-- Nighttime Upload -->
       <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
         <div class="border-b pb-3">
           <h3 class="text-base font-bold text-ja-maroon">🌙 Nighttime Batch Upload (Any Excel / CSV File)</h3>
-          <p class="text-xs text-slate-500 mt-0.5">Upload your daily showroom export. The file name can be anything.</p>
+          <p class="text-xs text-slate-500 mt-0.5">Upload daily showroom export. The file name can be anything.</p>
         </div>
 
-        <div 
-          class="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center bg-slate-50 hover:bg-amber-50/40 transition cursor-pointer" 
-          onclick="document.getElementById('excelFileInput').click()"
-        >
+        <div class="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center bg-slate-50 hover:bg-amber-50/40 transition cursor-pointer" onclick="document.getElementById('excelFileInput').click()">
           <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" class="hidden" onchange="handleFileUpload(event)" />
           <div class="text-3xl mb-1">📂</div>
-          <div class="font-bold text-xs text-ja-maroon" id="uploadBoxLabel">Click to Select Daily Showroom File (.xlsx or .csv)</div>
+          <div class="font-bold text-xs text-ja-maroon">Click to Select Daily Showroom File (.xlsx or .csv)</div>
           <div class="text-[11px] text-slate-400 mt-0.5">Accepts any file name (e.g. scheme.xlsx, today.csv)</div>
         </div>
 
-        <!-- Scan Status & Results -->
         <div id="uploadFeedbackText" class="text-xs font-bold text-slate-600 hidden"></div>
 
         <div id="uploadSummaryBox" class="hidden p-4 bg-white border border-ja-maroon rounded-xl text-xs space-y-3">
@@ -265,10 +215,9 @@
           </button>
         </div>
       </div>
-
     </section>
 
-    <!-- ==================== TAB 4: CUSTOMER FOLLOW-UP ==================== -->
+    <!-- TAB 4: CUSTOMER FOLLOW-UP -->
     <section id="view-followup" class="hidden space-y-4">
       <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-wrap justify-between items-center gap-3">
         <div class="flex items-center space-x-2">
@@ -278,9 +227,7 @@
             <option value="WAITING">Waiting (Pending 2-day recheck)</option>
           </select>
         </div>
-        <div class="text-xs text-slate-500">
-          Pending Cases: <b id="fuCountText" class="text-ja-maroon font-bold">0</b>
-        </div>
+        <div class="text-xs text-slate-500">Pending Cases: <b id="fuCountText" class="text-ja-maroon font-bold">0</b></div>
       </div>
 
       <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
@@ -302,18 +249,18 @@
       </div>
     </section>
 
-    <!-- ==================== TAB 5: SCHEME STAFF ==================== -->
+    <!-- TAB 5: SCHEME STAFF -->
     <section id="view-staff" class="hidden space-y-6 max-w-4xl mx-auto">
       <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
         <h3 class="font-bold text-sm text-ja-maroon border-b pb-2">Add New Scheme Staff Member</h3>
         <form onsubmit="handleAddNewStaff(event)" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
             <label class="block text-xs font-semibold text-slate-600 mb-1">Staff Full Name</label>
-            <input type="text" id="newStaffName" required placeholder="e.g. S Kavitha" class="w-full border border-slate-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-ja-maroon focus:outline-none" />
+            <input type="text" id="newStaffName" required placeholder="e.g. S Kavitha" class="w-full border border-slate-300 rounded-lg p-2 text-xs" />
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-600 mb-1">Role / Designation</label>
-            <input type="text" id="newStaffRole" required placeholder="e.g. Scheme Executive" class="w-full border border-slate-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-ja-maroon focus:outline-none" />
+            <input type="text" id="newStaffRole" required placeholder="e.g. Scheme Executive" class="w-full border border-slate-300 rounded-lg p-2 text-xs" />
           </div>
           <div class="flex items-end">
             <button type="submit" id="btnAddStaffBtn" class="w-full bg-ja-maroon hover:bg-ja-darkMaroon text-white font-bold py-2 rounded-lg text-xs shadow transition">
@@ -342,7 +289,7 @@
       </div>
     </section>
 
-    <!-- ==================== TAB 6: REPORTS & EXPORTS ==================== -->
+    <!-- TAB 6: REPORTS & EXPORTS -->
     <section id="view-reports" class="hidden space-y-6 max-w-3xl mx-auto">
       <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
         <h3 class="font-bold text-sm text-ja-maroon border-b pb-2">Generate Showroom Scheme Reports</h3>
@@ -365,27 +312,17 @@
       </div>
     </section>
 
-    <!-- ==================== TAB 7: SETTINGS ==================== -->
+    <!-- TAB 7: SETTINGS -->
     <section id="view-settings" class="hidden space-y-6 max-w-3xl mx-auto">
       <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
         <h3 class="font-bold text-sm text-ja-maroon border-b pb-2">Google Sheets Backend Connection</h3>
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1">Google Apps Script Web App URL</label>
-          <input 
-            type="text" 
-            id="settingsSheetUrl" 
-            placeholder="https://script.google.com/macros/s/.../exec" 
-            class="w-full border border-slate-300 rounded-lg p-2.5 text-xs font-mono focus:ring-2 focus:ring-ja-maroon focus:outline-none" 
-          />
+          <input type="text" id="settingsSheetUrl" placeholder="https://script.google.com/macros/s/.../exec" class="w-full border border-slate-300 rounded-lg p-2.5 text-xs font-mono" />
         </div>
-
         <div class="flex flex-wrap gap-2">
-          <button onclick="saveSettings()" class="bg-ja-maroon hover:bg-ja-darkMaroon text-white font-bold px-5 py-2.5 rounded-lg text-xs shadow">
-            Save Connection Settings
-          </button>
-          <button onclick="syncWithGoogleSheet(true)" id="btnSyncNow" class="bg-slate-100 hover:bg-slate-200 border border-slate-300 font-bold px-4 py-2.5 rounded-lg text-xs text-slate-700">
-            🔄 Test Connection & Pull Data
-          </button>
+          <button onclick="saveSettings()" class="bg-ja-maroon hover:bg-ja-darkMaroon text-white font-bold px-5 py-2.5 rounded-lg text-xs shadow">Save Connection Settings</button>
+          <button onclick="syncWithGoogleSheet(true)" id="btnSyncNow" class="bg-slate-100 hover:bg-slate-200 border border-slate-300 font-bold px-4 py-2.5 rounded-lg text-xs text-slate-700">🔄 Test Connection & Pull Data</button>
         </div>
         <div id="settingsStatusText" class="text-xs font-semibold text-emerald-700 hidden"></div>
       </div>
@@ -393,7 +330,7 @@
 
   </main>
 
-  <!-- ================= MODAL: FOLLOW-UP ================= -->
+  <!-- MODAL: FOLLOW-UP -->
   <div id="followupModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl text-xs">
       <div class="flex justify-between items-center border-b pb-2">
@@ -421,14 +358,11 @@
       </div>
       <div class="flex justify-end space-x-2 pt-2 border-t">
         <button onclick="closeFollowupModal()" class="px-4 py-2 border rounded-lg bg-slate-100">Cancel</button>
-        <button onclick="saveFollowupRecord()" class="px-5 py-2 bg-ja-maroon text-white rounded-lg font-bold shadow">
-          Save Follow-up
-        </button>
+        <button onclick="saveFollowupRecord()" class="px-5 py-2 bg-ja-maroon text-white rounded-lg font-bold shadow">Save Follow-up</button>
       </div>
     </div>
   </div>
 
-  <!-- ================= JAVASCRIPT ENGINE ================= -->
   <script>
     let customers = JSON.parse(localStorage.getItem('ja_customers')) || [];
     let payments = JSON.parse(localStorage.getItem('ja_payments')) || [];
@@ -443,7 +377,6 @@
     let currentFollowupCustomer = null;
     let pendingBatchRows = [];
 
-    // Startup Initialization
     function init() {
       populateStaffDropdown();
       document.getElementById('counterStaffName').innerText = activeStaff;
@@ -452,7 +385,6 @@
       const savedUrl = localStorage.getItem('ja_sheet_url');
       if (savedUrl) {
         document.getElementById('settingsSheetUrl').value = savedUrl;
-        // Auto-pull fresh data from Google Sheet in background on every startup!
         syncWithGoogleSheet(false);
       }
 
@@ -503,7 +435,7 @@
 
       const btn = document.getElementById('btnAddStaffBtn');
       btn.disabled = true;
-      btn.innerText = "Saving to Google Sheet...";
+      btn.innerText = "Saving...";
       const dateAdded = new Date().toLocaleDateString('en-GB');
 
       staffMembers.push({ name, role, status: "Active", dateAdded });
@@ -551,7 +483,41 @@
       document.getElementById('dashWeightCust').innerText = customers.filter(c => c.schemeType === 'Weight Scheme').length;
       document.getElementById('dashBonusCust').innerText = customers.filter(c => c.schemeType === 'Bonus Scheme').length;
       document.getElementById('dashWaitingCount').innerText = followups.filter(f => f.status === 'WAITING').length;
-      document.getElementById('dashPendingCount').innerText = customers.filter(c => c.installmentsPaid < c.tenureMonths).length;
+
+      const currentMonth = new Date().getMonth() + 1;
+      const currentYear = new Date().getFullYear();
+
+      let unpaidThisMonth = 0;
+
+      customers.forEach(c => {
+        if (c.installmentsPaid >= c.tenureMonths) return;
+
+        let hasPaidForCurrentMonth = false;
+
+        if (c.advanceMonths && c.advanceMonths > 0) {
+          hasPaidForCurrentMonth = true;
+        } else if (c.lastDate) {
+          const parts = c.lastDate.split(/[-/]/);
+          let payMonth, payYear;
+          if (parts[0].length === 4) {
+            payYear = parseInt(parts[0]);
+            payMonth = parseInt(parts[1]);
+          } else {
+            payMonth = parseInt(parts[1]);
+            payYear = parseInt(parts[2]);
+          }
+
+          if (payMonth === currentMonth && payYear === currentYear) {
+            hasPaidForCurrentMonth = true;
+          }
+        }
+
+        if (!hasPaidForCurrentMonth) {
+          unpaidThisMonth++;
+        }
+      });
+
+      document.getElementById('dashPendingCount').innerText = unpaidThisMonth;
     }
 
     function renderCustomerMaster() {
@@ -577,7 +543,7 @@
         let matrix = `<div class="flex space-x-1">`;
         for (let m = 1; m <= c.tenureMonths; m++) {
           if (m <= c.installmentsPaid) {
-            matrix += `<span class="w-4 h-4 rounded text-[9px] flex items-center justify-center font-bold bg-emerald-600 text-white">✓</span>`;
+            matrix += `<span class="w-4 h-4 rounded text-[9px] flex items-center justify-center font-bold bg-emerald-600 text-white" title="Month ${m}: Paid">✓</span>`;
           } else {
             matrix += `<span class="w-4 h-4 rounded text-[9px] flex items-center justify-center font-bold bg-slate-200 text-slate-500">${m}</span>`;
           }
@@ -631,6 +597,7 @@
 
       currentQuickPayCustomer.installmentsPaid += 1;
       const dateStr = new Date().toLocaleDateString('en-GB');
+      currentQuickPayCustomer.lastDate = dateStr;
 
       payments.push({
         date: dateStr,
@@ -669,51 +636,7 @@
       renderCustomerMaster();
     }
 
-    // =====================================================================
-    // 🔍 BULLETPROOF EXCEL/CSV PARSER (HANDLES ANY FILE NAME & TITLE ROWS)
-    // =====================================================================
     function handleFileUpload(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      const fb = document.getElementById('uploadFeedbackText');
-      fb.classList.remove('hidden');
-      fb.innerText = `Reading file: ${file.name}...`;
-
-      const reader = new FileReader();
-      reader.onload = function(evt) {
-        try {
-          const data = new Uint8Array(evt.target.result);
-          const workbook = XLSX.read(data, { type: 'array' });
-          
-          // Find the sheet that actually has data
-          let targetSheet = null;
-          let rows = [];
-          for (let sName of workbook.SheetNames) {
-            const tempRows = XLSX.utils.sheet_to_json(workbook.Sheets[sName], { header: 1 });
-            if (tempRows && tempRows.length > rows.length) {
-              rows = tempRows;
-              targetSheet = sName;
-            }
-          }
-
-          if (rows.length < 2) {
-            alert("No data found in uploaded file.");
-            fb.innerText = "Error: File contains no data rows.";
-            return;
-          }
-
-          fb.innerText = `Analyzing sheet "${targetSheet}" with ${rows.length} rows...`;
-          processImportedRows(rows);
-        } catch(err) {
-          alert("Error parsing Excel file: " + err);
-          fb.innerText = "Error parsing file.";
-        }
-      };
-      reader.readAsArrayBuffer(file);
-    }
-
-function handleFileUpload(e) {
       const file = e.target.files[0];
       if (!file) return;
 
@@ -754,7 +677,7 @@ function handleFileUpload(e) {
       reader.readAsArrayBuffer(file);
     }
 
-   function processImportedRows(rows) {
+    function processImportedRows(rows) {
       const fb = document.getElementById('uploadFeedbackText');
       
       const has = (cell, text) => {
@@ -765,7 +688,6 @@ function handleFileUpload(e) {
       let headerRowIndex = -1;
       let idxAcc = -1, idxName = -1, idxMobile = -1, idxScheme = -1, idxInst = -1, idxReceipt = -1, idxAmount = -1, idxMode = -1, idxRef = -1;
 
-      // Scan first 10 rows for headers
       for (let r = 0; r < Math.min(10, rows.length); r++) {
         const line = rows[r];
         if (!line || !Array.isArray(line)) continue;
@@ -780,25 +702,23 @@ function handleFileUpload(e) {
           idxInst = line.findIndex(h => has(h, 'total installments') || has(h, 'installment'));
           idxReceipt = line.findIndex(h => has(h, 'receipt'));
           idxAmount = line.findIndex(h => has(h, 'emi') || has(h, 'amount'));
-          // 🔴 FIXED: Now properly looks for Mode of Payment and Ref No!
           idxMode = line.findIndex(h => has(h, 'mode of payment') || has(h, 'payment mode') || has(h, 'mode'));
           idxRef = line.findIndex(h => has(h, 'mop ref') || has(h, 'ref no') || has(h, 'reference'));
           break;
         }
       }
 
-      // Fallback column positions if header text is not found
       if (headerRowIndex === -1) {
         headerRowIndex = 0;
-        idxScheme = 1;  // Column B
-        idxAcc = 2;     // Column C
-        idxReceipt = 4; // Column E
-        idxAmount = 5;  // Column F
-        idxMode = 8;    // Column I (Mode of payment)
-        idxName = 9;    // Column J
-        idxMobile = 10; // Column K
-        idxInst = 11;   // Column L
-        idxRef = 14;    // Column O
+        idxScheme = 1;
+        idxAcc = 2;
+        idxReceipt = 4;
+        idxAmount = 5;
+        idxMode = 8;
+        idxName = 9;
+        idxMobile = 10;
+        idxInst = 11;
+        idxRef = 14;
       }
 
       let newCount = 0, existingCount = 0, advanceCount = 0;
@@ -819,12 +739,7 @@ function handleFileUpload(e) {
         const inst = parseInt(r[idxInst]) || 1;
         const receipt = r[idxReceipt] ? String(r[idxReceipt]).trim() : "";
         const amount = parseFloat(r[idxAmount]) || 0;
-
-        // 🔴 CAPTURE ACTUAL PAYMENT MODE & REF NO (Clean line breaks)
-        const paymentMode = (idxMode !== -1 && r[idxMode]) 
-          ? String(r[idxMode]).replace(/[\r\n]+/g, ' ').trim() 
-          : "Cash";
-
+        const paymentMode = (idxMode !== -1 && r[idxMode]) ? String(r[idxMode]).replace(/[\r\n]+/g, ' ').trim() : "Cash";
         const refNo = (idxRef !== -1 && r[idxRef]) ? String(r[idxRef]).trim() : "-";
 
         const existing = customers.find(c => c.accountNumber === acc);
@@ -875,6 +790,7 @@ function handleFileUpload(e) {
           const diff = row.installmentsPaid - match.installmentsPaid;
           match.advanceMonths = diff > 1 ? diff - 1 : 0;
           match.installmentsPaid = row.installmentsPaid;
+          match.lastDate = row.date;
         } else {
           customers.push({
             accountNumber: row.accountNumber,
@@ -883,7 +799,8 @@ function handleFileUpload(e) {
             schemeType: row.schemeType,
             tenureMonths: row.tenureMonths,
             installmentsPaid: row.installmentsPaid,
-            advanceMonths: row.installmentsPaid > 1 ? 1 : 0
+            advanceMonths: row.installmentsPaid > 1 ? 1 : 0,
+            lastDate: row.date
           });
         }
 
@@ -894,7 +811,7 @@ function handleFileUpload(e) {
           monthPaid: row.installmentsPaid,
           receiptNumber: row.receipt,
           amount: row.amount,
-          paymentMode: row.paymentMode, // 🔴 Preserves SBI Card, GPay, etc.
+          paymentMode: row.paymentMode,
           refNo: row.refNo,
           markedBy: activeStaff
         });
@@ -1130,7 +1047,6 @@ function handleFileUpload(e) {
       syncWithGoogleSheet(true);
     }
 
-    // PULL LATEST LIVE DATA FROM GOOGLE SHEETS
     async function syncWithGoogleSheet(showAlert) {
       const url = localStorage.getItem('ja_sheet_url');
       if (!url) return;
@@ -1142,7 +1058,6 @@ function handleFileUpload(e) {
         const res = await fetch(url);
         const data = await res.json();
 
-        // 1. Refresh Staff from Google Sheet (removes deleted staff!)
         if (data.staff && Array.isArray(data.staff)) {
           staffMembers = data.staff.map(s => ({
             name: s["Staff Name"],
@@ -1155,7 +1070,6 @@ function handleFileUpload(e) {
           renderStaffTable();
         }
 
-        // 2. Refresh Customers from Google Sheet
         if (data.customers && data.customers.length > 0) {
           customers = data.customers.map(c => ({
             accountNumber: c["Account Number"],
@@ -1164,7 +1078,8 @@ function handleFileUpload(e) {
             schemeType: c["Scheme Type"],
             tenureMonths: parseInt(c["Tenure Months"]) || 11,
             installmentsPaid: parseInt(c["Installments Paid"]) || 1,
-            advanceMonths: parseInt(c["Advance Months"]) || 0
+            advanceMonths: parseInt(c["Advance Months"]) || 0,
+            lastDate: c["Join Date"] || ""
           }));
           localStorage.setItem('ja_customers', JSON.stringify(customers));
         }
