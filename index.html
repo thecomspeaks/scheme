@@ -478,13 +478,42 @@
       });
     }
 
+    // 🔴 REPLACEMENT START (CRASH-PROOF DATE PARSER)
+    function parseDateSafely(val) {
+      if (!val) return null;
+      if (val instanceof Date) return val;
+      if (typeof val === 'number') return new Date(val);
+      
+      const str = String(val).trim();
+      if (!str) return null;
+
+      // Handle ISO strings (e.g. 2026-11-22T00:00:00.000Z from Google Sheets)
+      if (str.includes('T')) {
+        const d = new Date(str);
+        if (!isNaN(d.getTime())) return d;
+      }
+
+      // Handle DD/MM/YYYY or YYYY-MM-DD
+      const parts = str.split(/[-/]/);
+      if (parts.length >= 3) {
+        if (parts[0].length === 4) { // YYYY-MM-DD
+          return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+        } else { // DD/MM/YYYY
+          return new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+        }
+      }
+
+      const fallback = new Date(str);
+      return isNaN(fallback.getTime()) ? null : fallback;
+    }
+
     function updateDashboardStats() {
       document.getElementById('dashTotalCust').innerText = customers.length;
       document.getElementById('dashWeightCust').innerText = customers.filter(c => c.schemeType === 'Weight Scheme').length;
       document.getElementById('dashBonusCust').innerText = customers.filter(c => c.schemeType === 'Bonus Scheme').length;
       document.getElementById('dashWaitingCount').innerText = followups.filter(f => f.status === 'WAITING').length;
 
-      const currentMonth = new Date().getMonth() + 1;
+      const currentMonth = new Date().getMonth() + 1; // 1 to 12
       const currentYear = new Date().getFullYear();
 
       let unpaidThisMonth = 0;
@@ -494,20 +523,12 @@
 
         let hasPaidForCurrentMonth = false;
 
+        // Advance payment means they are clear for this month
         if (c.advanceMonths && c.advanceMonths > 0) {
           hasPaidForCurrentMonth = true;
         } else if (c.lastDate) {
-          const parts = c.lastDate.split(/[-/]/);
-          let payMonth, payYear;
-          if (parts[0].length === 4) {
-            payYear = parseInt(parts[0]);
-            payMonth = parseInt(parts[1]);
-          } else {
-            payMonth = parseInt(parts[1]);
-            payYear = parseInt(parts[2]);
-          }
-
-          if (payMonth === currentMonth && payYear === currentYear) {
+          const d = parseDateSafely(c.lastDate);
+          if (d && (d.getMonth() + 1) === currentMonth && d.getFullYear() === currentYear) {
             hasPaidForCurrentMonth = true;
           }
         }
@@ -519,7 +540,7 @@
 
       document.getElementById('dashPendingCount').innerText = unpaidThisMonth;
     }
-
+    // 🔴 REPLACEMENT END
     function renderCustomerMaster() {
       const tbody = document.getElementById('custMasterBody');
       const q = document.getElementById('custSearch').value.toLowerCase().trim();
