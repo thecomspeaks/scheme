@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jos Alukkas India Private Limited – Tenkasi Scheme Master</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- SheetJS for real Excel (.xlsx & .csv) parsing and export -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  
+  <!-- jsPDF & AutoTable for real PDF export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ja: {
+              maroon: '#6B0B1A',
+              darkMaroon: '#4A0510',
+              gold: '#C59A3F',
+              goldLight: '#FBF6EA',
+              goldBorder: '#E5D1A6',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col">
+
+  <!-- ================= TOP SHOWROOM HEADER ================= -->
+  <header class="bg-ja-maroon text-white sticky top-0 z-40 border-b-2 border-ja-gold shadow-md">
+    <div class="max-w-7xl mx-auto px-4 py-2.5 flex flex-wrap justify-between items-center gap-3">
+      
+      <!-- Brand & Title -->
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-full bg-ja-gold flex items-center justify-center text-ja-darkMaroon font-black text-lg shadow-sm">
+          JA
+        </div>
+        <div>
+          <h1 class="text-base md:text-lg font-bold tracking-wide text-white leading-tight">
+            Jos Alukkas India Private Limited
+          </h1>
+          <p class="text-xs text-amber-200/90 font-medium">Tenkasi Branch • Scheme Master Portal</p>
+        </div>
+      </div>
+
+      <!-- Staff Incharge Selector -->
+      <div class="flex items-center space-x-2 bg-ja-darkMaroon px-3 py-1.5 rounded-lg border border-ja-gold/30">
+        <span class="text-xs text-amber-200 font-medium">Scheme Incharge:</span>
+        <select id="activeStaffSelector" onchange="changeActiveStaff()" class="bg-ja-maroon text-white text-xs font-bold rounded px-2.5 py-1 border border-ja-gold/40 focus:outline-none">
+          <!-- Loaded dynamically from Staff Master -->
+        </select>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ================= NAVIGATION TABS (7 TABS) ================= -->
+  <nav class="bg-white border-b border-slate-200 sticky top-[61px] z-30 shadow-xs">
+    <div class="max-w-7xl mx-auto px-4 flex space-x-1 overflow-x-auto text-xs">
+      <button onclick="switchTab('dashboard')" id="tabBtn-dashboard" class="py-3 px-4 border-b-2 border-ja-maroon text-ja-maroon font-bold whitespace-nowrap">
+        📊 1. Dashboard
+      </button>
+      <button onclick="switchTab('customers')" id="tabBtn-customers" class="py-3 px-4 border-b-2 border-transparent text-slate-600 hover:text-ja-maroon font-semibold whitespace-nowrap">
+        👥 2. Customer Master
+      </button>
+      <button onclick="switchTab('payments')" id="tabBtn-payments" class="py-3 px-4 border-b-2 border-transparent text-slate-600 hover:text-ja-maroon font-semibold whitespace-nowrap">
+        💳 3. Payment Tracking
+      </button>
+      <button onclick="switchTab('followup')" id="tabBtn-followup" class="py-3 px-4 border-b-2 border-transparent text-slate-600 hover:text-ja-maroon font-semibold whitespace-nowrap">
+        📞 4. Customer Follow-up
+      </button>
+      <button onclick="switchTab('staff')" id="tabBtn-staff" class="py-3 px-4 border-b-2 border-transparent text-slate-600 hover:text-ja-maroon font-semibold whitespace-nowrap">
+        👩‍💼 5. Scheme Staff
+      </button>
+      <button onclick="switchTab('reports')" id="tabBtn-reports" class="py-3 px-4 border-b-2 border-transparent text-slate-600 hover:text-ja-maroon font-semibold whitespace-nowrap">
+        📄 6. Reports & Exports
+      </button>
+      <button onclick="switchTab('settings')" id="tabBtn-settings" class="py-3 px-4 border-b-2 border-transparent text-slate-600 hover:text-ja-maroon font-semibold whitespace-nowrap">
+        ⚙️ 7. Settings
+      </button>
+    </div>
+  </nav>
+
+  <!-- ================= MAIN WORKSPACE ================= -->
+  <main class="flex-1 max-w-7xl mx-auto w-full p-4 md:p-6">
+
+    <!-- ==================== TAB 1: DASHBOARD ==================== -->
+    <section id="view-dashboard" class="space-y-6">
+      
+      <!-- Metrics Row -->
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-3.5">
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Customers</div>
+          <div class="text-2xl font-black text-ja-maroon mt-1" id="dashTotalCust">0</div>
+          <div class="text-[10px] text-slate-400">From uploaded files</div>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-amber-200 shadow-sm bg-amber-50/20">
+          <div class="text-[11px] font-bold text-amber-800 uppercase tracking-wider">Weight Scheme (11M)</div>
+          <div class="text-2xl font-black text-amber-700 mt-1" id="dashWeightCust">0</div>
+          <div class="text-[10px] text-slate-400">11-Month Gold Tenure</div>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-purple-200 shadow-sm bg-purple-50/20">
+          <div class="text-[11px] font-bold text-purple-800 uppercase tracking-wider">Bonus Scheme (12M)</div>
+          <div class="text-2xl font-black text-purple-700 mt-1" id="dashBonusCust">0</div>
+          <div class="text-[10px] text-slate-400">12-Month Cash Bonus</div>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-orange-200 shadow-sm bg-orange-50/20">
+          <div class="text-[11px] font-bold text-orange-800 uppercase tracking-wider">Waiting Follow-ups</div>
+          <div class="text-2xl font-black text-orange-600 mt-1" id="dashWaitingCount">0</div>
+          <div class="text-[10px] text-slate-400">Pending 2-day recheck</div>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-red-200 shadow-sm bg-red-50/20">
+          <div class="text-[11px] font-bold text-red-800 uppercase tracking-wider">Pending Dues</div>
+          <div class="text-2xl font-black text-red-600 mt-1" id="dashPendingCount">0</div>
+          <div class="text-[10px] text-slate-400">Unpaid for current cycle</div>
+        </div>
+      </div>
+
+      <!-- Overview Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3">
+          <h3 class="font-bold text-sm text-ja-maroon border-b pb-2">☀️ Daytime Counter Rules</h3>
+          <p class="text-xs text-slate-600 leading-relaxed">
+            When existing customers visit the showroom during the day, the desk staff uses the simple <b>PAID (✓)</b> button. No amounts, payment modes, or receipt IDs are required. The complete transaction reconciliation is handled at night.
+          </p>
+          <div class="text-xs bg-ja-goldLight border border-ja-goldBorder p-2.5 rounded text-ja-darkMaroon font-medium">
+            Active Counter Staff: <b id="dashActiveStaffText">Eswari M</b>
+          </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3">
+          <h3 class="font-bold text-sm text-ja-maroon border-b pb-2">🌙 Nighttime Excel / CSV Sync</h3>
+          <p class="text-xs text-slate-600 leading-relaxed">
+            Export the day's collection ledger from the billing computer and drop it in Tab 3. The system reconciles receipts, detects new joiners, flags advance payments, and pushes everything directly to your Google Sheet.
+          </p>
+          <div class="text-xs bg-slate-50 border p-2.5 rounded text-slate-600 font-mono">
+            Backend: Jos Alukkas India Private Limited – Tenkasi Scheme Master
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ==================== TAB 2: CUSTOMER MASTER ==================== -->
+    <section id="view-customers" class="hidden space-y-4">
+      
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-wrap justify-between items-center gap-3">
+        <div class="flex items-center space-x-2 flex-1 min-w-[280px]">
+          <input 
+            type="text" 
+            id="custSearch" 
+            oninput="renderCustomerMaster()" 
+            placeholder="🔍 Search Customer Name, Mobile, or Account No..." 
+            class="border border-slate-300 rounded-lg px-3.5 py-2 text-xs w-full max-w-md focus:ring-2 focus:ring-ja-maroon focus:outline-none" 
+          />
+          <select id="custSchemeFilter" onchange="renderCustomerMaster()" class="border border-slate-300 rounded-lg px-3 py-2 text-xs bg-white focus:outline-none">
+            <option value="ALL">All Scheme Types</option>
+            <option value="Weight Scheme">Weight Scheme (11M)</option>
+            <option value="Bonus Scheme">Bonus Scheme (12M)</option>
+          </select>
+        </div>
+        <div class="text-xs text-slate-500 font-medium">
+          Total Customers: <b id="custCountText" class="text-ja-maroon font-bold">0</b>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead class="bg-slate-50 text-slate-600 border-b border-slate-200 uppercase font-semibold">
+              <tr>
+                <th class="p-3">Account Number</th>
+                <th class="p-3">Customer Name</th>
+                <th class="p-3">Mobile</th>
+                <th class="p-3">Scheme Type</th>
+                <th class="p-3">Tenure</th>
+                <th class="p-3">Installments Paid</th>
+                <th class="p-3">Month-by-Month Progress</th>
+                <th class="p-3">Advance Status</th>
+              </tr>
+            </thead>
+            <tbody id="custMasterBody" class="divide-y divide-slate-100">
+              <!-- Injected via JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ==================== TAB 3: PAYMENT TRACKING ==================== -->
+    <section id="view-payments" class="hidden space-y-6">
+
+      <!-- PART A: DAYTIME COUNTER QUICK PAY -->
+      <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
+        <div class="border-b pb-3 flex flex-wrap justify-between items-center gap-2">
+          <div>
+            <h3 class="text-base font-bold text-ja-maroon">☀️ Daytime Counter Payment (Simple 1-Click Paid)</h3>
+            <p class="text-xs text-slate-500 mt-0.5">Quick mark for walk-in customers. No payment mode or transaction details needed.</p>
+          </div>
+          <span class="text-xs font-bold text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-200">
+            Active Counter: <span id="counterStaffName">Eswari M</span>
+          </span>
+        </div>
+
+        <div class="flex gap-2 max-w-xl">
+          <input 
+            type="text" 
+            id="quickPaySearch" 
+            placeholder="Type Scheme Account No or Mobile (e.g. WS0073503)..." 
+            class="flex-1 border border-slate-300 rounded-lg px-3.5 py-2 text-xs uppercase font-mono focus:ring-2 focus:ring-ja-maroon focus:outline-none" 
+          />
+          <button onclick="lookupQuickPay()" class="bg-ja-maroon hover:bg-ja-darkMaroon text-white font-bold px-5 py-2 rounded-lg text-xs shadow-sm transition">
+            Find Customer
+          </button>
+        </div>
+
+        <!-- Populated Customer Card -->
+        <div id="quickPayCard" class="hidden p-4 bg-ja-goldLight border border-ja-goldBorder rounded-xl max-w-xl flex justify-between items-center">
+          <div>
+            <h4 class="font-bold text-sm text-slate-900" id="qpName">-</h4>
+            <div class="text-xs text-ja-maroon font-semibold font-mono" id="qpDetails">-</div>
+            <div class="text-xs font-bold text-emerald-800 mt-1.5" id="qpNextMonth">Next Month to Pay: Month -</div>
+          </div>
+          <div>
+            <button onclick="confirmDaytimePayment()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-2.5 rounded-xl shadow text-xs flex items-center space-x-1.5 transition">
+              <span>PAID</span>
+              <span class="text-sm">✓</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PART B: NIGHTTIME BULK FILE SYNC -->
+      <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
+        <div class="border-b pb-3">
+          <h3 class="text-base font-bold text-ja-maroon">🌙 Nighttime Batch Upload (Excel / CSV)</h3>
+          <p class="text-xs text-slate-500 mt-0.5">Upload the day's collection export. Auto-reconciles full receipts, new joiners, and advance payments.</p>
+        </div>
+
+        <div 
+          class="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center bg-slate-50 hover:bg-amber-50/40 transition cursor-pointer" 
+          onclick="document.getElementById('excelFileInput').click()"
+        >
+          <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" class="hidden" onchange="handleFileUpload(event)" />
+          <div class="text-3xl mb-1">📂</div>
+          <div class="font-bold text-xs text-ja-maroon">Click to Select Daily Showroom File (.xlsx or .csv)</div>
+          <div class="text-[11px] text-slate-400 mt-0.5">Supports your 14 standard showroom headers</div>
+        </div>
+
+        <!-- Scan Summary Card -->
+        <div id="uploadSummaryBox" class="hidden p-4 bg-white border border-ja-maroon rounded-xl text-xs space-y-3">
+          <div class="font-bold text-ja-maroon text-sm border-b pb-1">Batch Validation Results:</div>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center py-1">
+            <div class="p-2 bg-slate-50 border rounded-lg"><span class="text-[10px] text-slate-500">Total Rows</span><div class="font-bold text-base" id="sumTotalRows">0</div></div>
+            <div class="p-2 bg-blue-50 border border-blue-200 rounded-lg text-blue-800"><span class="text-[10px]">🆕 New Customers</span><div class="font-bold text-base" id="sumNewCust">0</div></div>
+            <div class="p-2 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-800"><span class="text-[10px]">💳 Existing Payments</span><div class="font-bold text-base" id="sumExisting">0</div></div>
+            <div class="p-2 bg-amber-50 border border-amber-200 rounded-lg text-amber-800"><span class="text-[10px]">⏩ Advance Payments</span><div class="font-bold text-base" id="sumAdvances">0</div></div>
+          </div>
+          <button onclick="commitBatchUpload()" id="btnCommitBatch" class="w-full bg-ja-maroon hover:bg-ja-darkMaroon text-white font-bold py-2.5 rounded-lg transition text-xs shadow">
+            Confirm & Save to Google Sheets
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ==================== TAB 4: CUSTOMER FOLLOW-UP ==================== -->
+    <section id="view-followup" class="hidden space-y-4">
+      
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-wrap justify-between items-center gap-3">
+        <div class="flex items-center space-x-2">
+          <span class="text-xs font-bold text-ja-maroon">Follow-up Filter:</span>
+          <select id="fuFilter" onchange="renderFollowups()" class="border border-slate-300 rounded-lg px-3 py-1.5 text-xs bg-white focus:outline-none">
+            <option value="ALL">All Pending Follow-ups</option>
+            <option value="WAITING">Waiting (Pending 2-day recheck)</option>
+          </select>
+        </div>
+        <div class="text-xs text-slate-500">
+          Pending Cases: <b id="fuCountText" class="text-ja-maroon font-bold">0</b>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead class="bg-slate-50 text-slate-600 border-b border-slate-200 uppercase font-semibold">
+              <tr>
+                <th class="p-3">Customer Details</th>
+                <th class="p-3">Scheme Type</th>
+                <th class="p-3">Installment Due</th>
+                <th class="p-3">Last Follow-up Record</th>
+                <th class="p-3">Current Status</th>
+                <th class="p-3 text-center">Action</th>
+              </tr>
+            </thead>
+            <tbody id="followupBody" class="divide-y divide-slate-100">
+              <!-- Injected via JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ==================== TAB 5: SCHEME STAFF ==================== -->
+    <section id="view-staff" class="hidden space-y-6 max-w-4xl mx-auto">
+      
+      <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
+        <h3 class="font-bold text-sm text-ja-maroon border-b pb-2">Add New Scheme Staff Member</h3>
+        <form onsubmit="handleAddNewStaff(event)" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Staff Full Name</label>
+            <input type="text" id="newStaffName" required placeholder="e.g. S Kavitha" class="w-full border border-slate-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-ja-maroon focus:outline-none" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Role / Designation</label>
+            <input type="text" id="newStaffRole" required placeholder="e.g. Scheme Executive" class="w-full border border-slate-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-ja-maroon focus:outline-none" />
+          </div>
+          <div class="flex items-end">
+            <button type="submit" id="btnAddStaffBtn" class="w-full bg-ja-maroon hover:bg-ja-darkMaroon text-white font-bold py-2 rounded-lg text-xs shadow transition">
+              + Add Staff to Google Sheet
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-3.5 bg-slate-50 border-b font-bold text-xs text-ja-maroon">
+          Active Scheme Staff Incharges
+        </div>
+        <table class="w-full text-left border-collapse text-xs">
+          <thead class="bg-slate-50 text-slate-600 border-b">
+            <tr>
+              <th class="p-3">Staff Name</th>
+              <th class="p-3">Role</th>
+              <th class="p-3">Status</th>
+              <th class="p-3">Date Added</th>
+            </tr>
+          </thead>
+          <tbody id="staffTableBody" class="divide-y divide-slate-100">
+            <!-- Injected via JavaScript -->
+          </tbody>
+        </table>
+      </div>
+
+    </section>
+
+    <!-- ==================== TAB 6: REPORTS & EXPORTS ==================== -->
+    <section id="view-reports" class="hidden space-y-6 max-w-3xl mx-auto">
+      <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
+        <h3 class="font-bold text-sm text-ja-maroon border-b pb-2">Generate Showroom Scheme Reports</h3>
+        
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Select Report Type</label>
+          <select id="reportTypeSelector" class="w-full border border-slate-300 rounded-lg p-2.5 text-xs bg-white focus:outline-none">
+            <option value="MASTER_LEDGER">Full Scheme Master Customer Ledger</option>
+            <option value="FOLLOWUP_LIST">Active Defaulter & Follow-up Call List</option>
+            <option value="ADVANCE_PAYMENTS">Advance Payments Report (1 to 2 Months Ahead)</option>
+          </select>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+          <button onclick="exportReportExcel()" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2.5 rounded-lg text-xs flex items-center justify-center space-x-2 shadow transition">
+            <span>📊</span>
+            <span>Export to Excel (.xlsx)</span>
+          </button>
+          <button onclick="exportReportPDF()" class="bg-ja-maroon hover:bg-ja-darkMaroon text-white font-bold py-2.5 rounded-lg text-xs flex items-center justify-center space-x-2 shadow transition">
+            <span>📄</span>
+            <span>Export to PDF</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 7: SETTINGS ==================== -->
+    <section id="view-settings" class="hidden space-y-6 max-w-3xl mx-auto">
+      <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
+        <h3 class="font-bold text-sm text-ja-maroon border-b pb-2">Google Sheets Backend Connection</h3>
+        
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Google Apps Script Web App URL</label>
+          <input 
+            type="text" 
+            id="settingsSheetUrl" 
+            placeholder="https://script.google.com/macros/s/.../exec" 
+            class="w-full border border-slate-300 rounded-lg p-2.5 text-xs font-mono focus:ring-2 focus:ring-ja-maroon focus:outline-none" 
+          />
+        </div>
+
+        <div class="flex flex-wrap gap-2">
+          <button onclick="saveSettings()" class="bg-ja-maroon hover:bg-ja-darkMaroon text-white font-bold px-5 py-2.5 rounded-lg text-xs shadow transition">
+            Save Connection Settings
+          </button>
+          <button onclick="syncWithGoogleSheet()" id="btnSyncNow" class="bg-slate-100 hover:bg-slate-200 border border-slate-300 font-bold px-4 py-2.5 rounded-lg text-xs text-slate-700 transition">
+            🔄 Test Connection & Pull Data
+          </button>
+        </div>
+        <div id="settingsStatusText" class="text-xs font-semibold text-emerald-700 hidden"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ================= MODAL: CUSTOMER FOLLOW-UP (WAITING VS CLOSED) ================= -->
+  <div id="followupModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl text-xs">
+      <div class="flex justify-between items-center border-b pb-2">
+        <h3 class="font-bold text-sm text-ja-maroon">Record Customer Contact</h3>
+        <button onclick="closeFollowupModal()" class="text-slate-400 hover:text-slate-600 text-lg">✕</button>
+      </div>
+
+      <div>
+        <label class="block font-semibold text-slate-500 mb-1">Customer Account</label>
+        <input type="text" id="fuModalCust" readonly class="w-full bg-slate-100 border rounded-lg p-2 font-bold text-slate-800" />
+      </div>
+
+      <div>
+        <label class="block font-semibold text-slate-500 mb-1">Active Staff Incharge</label>
+        <input type="text" id="fuModalStaff" readonly class="w-full bg-slate-100 border rounded-lg p-2 font-semibold text-slate-700" />
+      </div>
+
+      <div>
+        <label class="block font-semibold text-slate-500 mb-1">Customer Response / Remarks</label>
+        <textarea id="fuModalRemarks" rows="2" placeholder="e.g. Customer visiting showroom on 28th" class="w-full border rounded-lg p-2 text-xs focus:outline-none"></textarea>
+      </div>
+
+      <div>
+        <label class="block font-semibold text-slate-500 mb-1">Follow-up Status</label>
+        <select id="fuModalStatus" class="w-full border rounded-lg p-2 bg-white font-semibold focus:outline-none">
+          <option value="WAITING">⏳ Waiting (Pending - Check again in 2 days)</option>
+          <option value="CLOSED">✅ Closed (Follow-up for month completed)</option>
+        </select>
+      </div>
+
+      <div class="flex justify-end space-x-2 pt-2 border-t">
+        <button onclick="closeFollowupModal()" class="px-4 py-2 border rounded-lg bg-slate-100 hover:bg-slate-200 font-semibold">Cancel</button>
+        <button onclick="saveFollowupRecord()" id="btnSaveFuModal" class="px-5 py-2 bg-ja-maroon hover:bg-ja-darkMaroon text-white rounded-lg font-bold shadow">
+          Save Follow-up
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= JAVASCRIPT APPLICATION CORE ================= -->
+  <script>
+    // -----------------------------------------------------------------
+    // APPLICATION STATE: STRICTLY ZERO MOCK/DUMMY CUSTOMER DATA
+    // -----------------------------------------------------------------
+    let customers = JSON.parse(localStorage.getItem('ja_customers')) || [];
+    let payments = JSON.parse(localStorage.getItem('ja_payments')) || [];
+    let followups = JSON.parse(localStorage.getItem('ja_followups')) || [];
+
+    // Initial Staff Members
+    let staffMembers = JSON.parse(localStorage.getItem('ja_staff')) || [
+      { name: "Eswari M", role: "Scheme Incharge", status: "Active", dateAdded: "22/11/2026" },
+      { name: "M Ramalakshmi", role: "Scheme Incharge", status: "Active", dateAdded: "22/11/2026" }
+    ];
+
+    let activeStaff = staffMembers[0].name;
+    let currentQuickPayCustomer = null;
+    let currentFollowupCustomer = null;
+    let pendingBatchRows = [];
+
+    // Startup Initialization
+    function init() {
+      populateStaffDropdown();
+      document.getElementById('counterStaffName').innerText = activeStaff;
+      document.getElementById('dashActiveStaffText').innerText = activeStaff;
+      
+      const savedUrl = localStorage.getItem('ja_sheet_url');
+      if (savedUrl) {
+        document.getElementById('settingsSheetUrl').value = savedUrl;
+      }
+
+      updateDashboardStats();
+      renderCustomerMaster();
+      renderStaffTable();
+      renderFollowups();
+    }
+
+    // Tab Navigation
+    function switchTab(tabId) {
+      const tabs = ['dashboard', 'customers', 'payments', 'followup', 'staff', 'reports', 'settings'];
+      tabs.forEach(t => {
+        document.getElementById(`view-${t}`).classList.add('hidden');
+        const btn = document.getElementById(`tabBtn-${t}`);
+        btn.className = "py-3 px-4 border-b-2 border-transparent text-slate-600 hover:text-ja-maroon font-semibold whitespace-nowrap";
+      });
+
+      document.getElementById(`view-${tabId}`).classList.remove('hidden');
+      const activeBtn = document.getElementById(`tabBtn-${tabId}`);
+      activeBtn.className = "py-3 px-4 border-b-2 border-ja-maroon text-ja-maroon font-bold whitespace-nowrap";
+    }
+
+    // Staff Dropdown
+    function populateStaffDropdown() {
+      const sel = document.getElementById('activeStaffSelector');
+      sel.innerHTML = '';
+      staffMembers.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.name;
+        opt.innerText = `${s.name} (${s.role})`;
+        sel.appendChild(opt);
+      });
+      sel.value = activeStaff;
+    }
+
+    function changeActiveStaff() {
+      activeStaff = document.getElementById('activeStaffSelector').value;
+      document.getElementById('counterStaffName').innerText = activeStaff;
+      document.getElementById('dashActiveStaffText').innerText = activeStaff;
+    }
+
+    // 1. ADD NEW STAFF MEMBER (WIRED TO GOOGLE SHEETS)
+    async function handleAddNewStaff(e) {
+      e.preventDefault();
+      const name = document.getElementById('newStaffName').value.trim();
+      const role = document.getElementById('newStaffRole').value.trim();
+      if (!name) return;
+
+      const btn = document.getElementById('btnAddStaffBtn');
+      btn.disabled = true;
+      btn.innerText = "Saving to Google Sheet...";
+
+      const dateAdded = new Date().toLocaleDateString('en-GB');
+
+      // Update Local State
+      staffMembers.push({ name, role, status: "Active", dateAdded });
+      localStorage.setItem('ja_staff', JSON.stringify(staffMembers));
+      populateStaffDropdown();
+      renderStaffTable();
+      e.target.reset();
+
+      // POST TO GOOGLE SHEETS BACKEND
+      const sheetUrl = localStorage.getItem('ja_sheet_url');
+      if (sheetUrl) {
+        try {
+          await fetch(sheetUrl, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({
+              action: "ADD_STAFF",
+              name: name,
+              role: role,
+              dateAdded: dateAdded
+            })
+          });
+          alert(`✅ Success! Staff member ${name} saved to Google Sheets (Staff Master)!`);
+        } catch(err) {
+          alert("Error sending to Google Sheet: " + err);
+        }
+      } else {
+        alert("Staff saved locally. Please connect your Google Web App URL in Tab 7 (Settings) to sync with your sheet.");
+      }
+
+      btn.disabled = false;
+      btn.innerText = "+ Add Staff to Google Sheet";
+    }
+
+    function renderStaffTable() {
+      const tbody = document.getElementById('staffTableBody');
+      tbody.innerHTML = '';
+      staffMembers.forEach(s => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="p-3 font-bold text-slate-900">${s.name}</td>
+          <td class="p-3 text-slate-600">${s.role}</td>
+          <td class="p-3"><span class="px-2.5 py-0.5 bg-emerald-100 text-emerald-800 font-bold rounded-full text-[10px]">${s.status}</span></td>
+          <td class="p-3 text-slate-400 font-mono">${s.dateAdded}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Update Dashboard Metrics
+    function updateDashboardStats() {
+      document.getElementById('dashTotalCust').innerText = customers.length;
+      document.getElementById('dashWeightCust').innerText = customers.filter(c => c.schemeType === 'Weight Scheme').length;
+      document.getElementById('dashBonusCust').innerText = customers.filter(c => c.schemeType === 'Bonus Scheme').length;
+      document.getElementById('dashWaitingCount').innerText = followups.filter(f => f.status === 'WAITING').length;
+      document.getElementById('dashPendingCount').innerText = customers.filter(c => c.installmentsPaid < c.tenureMonths).length;
+    }
+
+    // Render Customer Master
+    function renderCustomerMaster() {
+      const tbody = document.getElementById('custMasterBody');
+      const q = document.getElementById('custSearch').value.toLowerCase().trim();
+      const filterScheme = document.getElementById('custSchemeFilter').value;
+      tbody.innerHTML = '';
+
+      let filtered = customers.filter(c => {
+        const matchQ = c.name.toLowerCase().includes(q) || c.accountNumber.toLowerCase().includes(q) || c.mobile.includes(q);
+        const matchS = filterScheme === 'ALL' || c.schemeType === filterScheme;
+        return matchQ && matchS;
+      });
+
+      document.getElementById('custCountText').innerText = filtered.length;
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-slate-400 italic">No customer records in database. Please upload your daily showroom file in Tab 3 (Payment Tracking).</td></tr>`;
+        return;
+      }
+
+      filtered.forEach(c => {
+        let matrix = `<div class="flex space-x-1">`;
+        for (let m = 1; m <= c.tenureMonths; m++) {
+          if (m <= c.installmentsPaid) {
+            matrix += `<span class="w-4 h-4 rounded text-[9px] flex items-center justify-center font-bold bg-emerald-600 text-white" title="Month ${m}: Paid">✓</span>`;
+          } else {
+            matrix += `<span class="w-4 h-4 rounded text-[9px] flex items-center justify-center font-bold bg-slate-200 text-slate-500" title="Month ${m}: Pending">${m}</span>`;
+          }
+        }
+        matrix += `</div>`;
+
+        let advBadge = c.advanceMonths > 0 
+          ? `<span class="bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full text-[10px] border border-amber-300">+${c.advanceMonths} Mo Advance</span>` 
+          : `<span class="text-slate-400 text-xs">-</span>`;
+
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-amber-50/20 border-b border-slate-100";
+        tr.innerHTML = `
+          <td class="p-3 font-mono text-ja-maroon font-bold">${c.accountNumber}</td>
+          <td class="p-3 font-bold text-slate-900">${c.name}</td>
+          <td class="p-3 font-mono text-slate-600">${c.mobile}</td>
+          <td class="p-3"><span class="px-2 py-0.5 rounded text-xs bg-slate-100">${c.schemeType}</span></td>
+          <td class="p-3 font-semibold">${c.tenureMonths} Months</td>
+          <td class="p-3 font-bold font-mono text-slate-800">${c.installmentsPaid} / ${c.tenureMonths}</td>
+          <td class="p-3">${matrix}</td>
+          <td class="p-3">${advBadge}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // 2. DAYTIME 1-CLICK PAYMENT (WIRED TO GOOGLE SHEETS)
+    function lookupQuickPay() {
+      const q = document.getElementById('quickPaySearch').value.trim().toUpperCase();
+      const match = customers.find(c => c.accountNumber === q || c.mobile === q);
+      const card = document.getElementById('quickPayCard');
+
+      if (!match) {
+        alert("Customer account not found. Please verify the account number.");
+        card.classList.add('hidden');
+        return;
+      }
+
+      currentQuickPayCustomer = match;
+      document.getElementById('qpName').innerText = match.name;
+      document.getElementById('qpDetails').innerText = `${match.accountNumber} • ${match.schemeType} • 📱 ${match.mobile}`;
+      document.getElementById('qpNextMonth').innerText = `Current Progress: ${match.installmentsPaid} of ${match.tenureMonths} Months. Marking: Month ${match.installmentsPaid + 1}`;
+      card.classList.remove('hidden');
+    }
+
+    async function confirmDaytimePayment() {
+      if (!currentQuickPayCustomer) return;
+      if (currentQuickPayCustomer.installmentsPaid >= currentQuickPayCustomer.tenureMonths) {
+        alert("This scheme has already reached all installments!");
+        return;
+      }
+
+      currentQuickPayCustomer.installmentsPaid += 1;
+      const dateStr = new Date().toLocaleDateString('en-GB');
+
+      // Update Local State
+      payments.push({
+        date: dateStr,
+        accountNumber: currentQuickPayCustomer.accountNumber,
+        customerName: currentQuickPayCustomer.name,
+        monthPaid: currentQuickPayCustomer.installmentsPaid,
+        markedBy: activeStaff,
+        mode: "Daytime Quick Check",
+        isAdvance: false
+      });
+
+      localStorage.setItem('ja_customers', JSON.stringify(customers));
+      localStorage.setItem('ja_payments', JSON.stringify(payments));
+
+      // SEND TO GOOGLE SHEETS BACKEND
+      const sheetUrl = localStorage.getItem('ja_sheet_url');
+      if (sheetUrl) {
+        fetch(sheetUrl, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: "DAYTIME_PAYMENT",
+            date: dateStr,
+            accountNumber: currentQuickPayCustomer.accountNumber,
+            customerName: currentQuickPayCustomer.name,
+            monthPaid: currentQuickPayCustomer.installmentsPaid,
+            markedBy: activeStaff
+          })
+        });
+      }
+
+      alert(`✅ Success! Marked Month ${currentQuickPayCustomer.installmentsPaid} as PAID for ${currentQuickPayCustomer.name} (Incharge: ${activeStaff}).`);
+      document.getElementById('quickPayCard').classList.add('hidden');
+      document.getElementById('quickPaySearch').value = '';
+      currentQuickPayCustomer = null;
+
+      updateDashboardStats();
+      renderCustomerMaster();
+    }
+
+    // 3. NIGHTTIME BATCH UPLOAD (.xlsx & .csv) (WIRED TO GOOGLE SHEETS)
+    function handleFileUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const data = new Uint8Array(evt.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const firstSheetName = workbook.SheetNames[0];
+        const rows = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheetName], { header: 1 });
+
+        if (rows.length < 2) {
+          alert("Uploaded file contains no data rows.");
+          return;
+        }
+
+        processImportedRows(rows);
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function processImportedRows(rows) {
+      let newCount = 0, existingCount = 0, advanceCount = 0;
+      pendingBatchRows = [];
+
+      const headers = rows[0].map(h => String(h || '').trim().toLowerCase());
+      const idxAcc = headers.findIndex(h => h.includes('scheme account') || h.includes('account number'));
+      const idxName = headers.findIndex(h => h.includes('customer name') || h.includes('name'));
+      const idxMobile = headers.findIndex(h => h.includes('mobile'));
+      const idxScheme = headers.findIndex(h => h.includes('scheme type'));
+      const idxInst = headers.findIndex(h => h.includes('total installments') || h.includes('installments'));
+      const idxReceipt = headers.findIndex(h => h.includes('receipt number') || h.includes('receipt'));
+      const idxAmount = headers.findIndex(h => h.includes('emi') || h.includes('amount'));
+
+      for (let i = 1; i < rows.length; i++) {
+        const r = rows[i];
+        if (!r[idxAcc]) continue;
+
+        const acc = String(r[idxAcc]).trim();
+        const name = r[idxName] ? String(r[idxName]).trim() : "Unknown";
+        const mobile = r[idxMobile] ? String(r[idxMobile]).trim() : "";
+        const rawScheme = r[idxScheme] ? String(r[idxScheme]).replace('\n', ' ').trim() : "Weight Scheme";
+        const schemeType = rawScheme.toLowerCase().includes('bonus') ? "Bonus Scheme" : "Weight Scheme";
+        const tenure = schemeType === "Bonus Scheme" ? 12 : 11;
+        const inst = parseInt(r[idxInst]) || 1;
+        const receipt = r[idxReceipt] ? String(r[idxReceipt]).trim() : "";
+        const amount = parseFloat(r[idxAmount]) || 0;
+
+        const existing = customers.find(c => c.accountNumber === acc);
+        if (existing) {
+          existingCount++;
+          if (inst - existing.installmentsPaid >= 2) advanceCount++;
+        } else {
+          newCount++;
+        }
+
+        pendingBatchRows.push({
+          accountNumber: acc,
+          name,
+          mobile,
+          schemeType,
+          tenureMonths: tenure,
+          installmentsPaid: inst,
+          receipt,
+          amount,
+          date: r[0] || new Date().toLocaleDateString('en-GB')
+        });
+      }
+
+      document.getElementById('sumTotalRows').innerText = pendingBatchRows.length;
+      document.getElementById('sumNewCust').innerText = newCount;
+      document.getElementById('sumExisting').innerText = existingCount;
+      document.getElementById('sumAdvances').innerText = advanceCount;
+      document.getElementById('uploadSummaryBox').classList.remove('hidden');
+    }
+
+    async function commitBatchUpload() {
+      const btn = document.getElementById('btnCommitBatch');
+      btn.disabled = true;
+      btn.innerText = "Syncing to Google Sheets...";
+
+      pendingBatchRows.forEach(row => {
+        let match = customers.find(c => c.accountNumber === row.accountNumber);
+        if (match) {
+          const diff = row.installmentsPaid - match.installmentsPaid;
+          match.advanceMonths = diff > 1 ? diff - 1 : 0;
+          match.installmentsPaid = row.installmentsPaid;
+        } else {
+          customers.push({
+            accountNumber: row.accountNumber,
+            name: row.name,
+            mobile: row.mobile,
+            schemeType: row.schemeType,
+            tenureMonths: row.tenureMonths,
+            installmentsPaid: row.installmentsPaid,
+            advanceMonths: row.installmentsPaid > 1 ? 1 : 0
+          });
+        }
+
+        payments.push({
+          date: row.date,
+          accountNumber: row.accountNumber,
+          customerName: row.name,
+          monthPaid: row.installmentsPaid,
+          receiptNumber: row.receipt,
+          amount: row.amount,
+          markedBy: activeStaff
+        });
+      });
+
+      localStorage.setItem('ja_customers', JSON.stringify(customers));
+      localStorage.setItem('ja_payments', JSON.stringify(payments));
+
+      // POST BATCH TO GOOGLE SHEETS BACKEND
+      const sheetUrl = localStorage.getItem('ja_sheet_url');
+      if (sheetUrl) {
+        try {
+          await fetch(sheetUrl, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({
+              action: "BATCH_SYNC",
+              batch: pendingBatchRows
+            })
+          });
+          alert(`✅ Batch upload complete! Synced ${pendingBatchRows.length} records to Google Sheets.`);
+        } catch(e) {
+          alert("Error syncing to Google Sheet: " + e);
+        }
+      } else {
+        alert("Batch saved locally. Please connect Google Sheet in Tab 7 (Settings).");
+      }
+
+      btn.disabled = false;
+      btn.innerText = "Confirm & Save to Google Sheets";
+      document.getElementById('uploadSummaryBox').classList.add('hidden');
+      updateDashboardStats();
+      renderCustomerMaster();
+      renderFollowups();
+      switchTab('customers');
+    }
+
+    // 4. FOLLOW-UP QUEUE & RECORDING (WIRED TO GOOGLE SHEETS)
+    function renderFollowups() {
+      const tbody = document.getElementById('followupBody');
+      const filter = document.getElementById('fuFilter').value;
+      tbody.innerHTML = '';
+
+      let list = customers.filter(c => c.installmentsPaid < c.tenureMonths);
+
+      if (filter === 'WAITING') {
+        const waitingAccounts = new Set(followups.filter(f => f.status === 'WAITING').map(f => f.accountNumber));
+        list = list.filter(c => waitingAccounts.has(c.accountNumber));
+      }
+
+      document.getElementById('fuCountText').innerText = list.length;
+
+      if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-400 italic">No pending follow-ups. All customer schemes are up to date!</td></tr>`;
+        return;
+      }
+
+      list.forEach(c => {
+        const lastF = followups.slice().reverse().find(f => f.accountNumber === c.accountNumber);
+        const statusDisplay = lastF 
+          ? (lastF.status === 'WAITING' ? '<span class="bg-amber-100 text-amber-800 border border-amber-300 px-2.5 py-0.5 rounded-full font-bold text-[11px]">⏳ Waiting (2-day check)</span>' : '<span class="bg-emerald-100 text-emerald-800 border border-emerald-300 px-2.5 py-0.5 rounded-full font-bold text-[11px]">✅ Closed</span>')
+          : '<span class="text-slate-400 italic">Not contacted</span>';
+
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 border-b border-slate-100";
+        tr.innerHTML = `
+          <td class="p-3">
+            <div class="font-bold text-slate-900">${c.name}</div>
+            <div class="font-mono text-ja-maroon text-xs font-semibold">${c.accountNumber} • 📱 ${c.mobile}</div>
+          </td>
+          <td class="p-3">${c.schemeType}</td>
+          <td class="p-3 font-bold text-red-700">Month ${c.installmentsPaid + 1} of ${c.tenureMonths}</td>
+          <td class="p-3 text-xs text-slate-600">${lastF ? `<b>${lastF.staff}</b>: "${lastF.remarks}"` : '-'}</td>
+          <td class="p-3">${statusDisplay}</td>
+          <td class="p-3 text-center">
+            <button onclick="openFollowupModal('${c.accountNumber}')" class="bg-ja-maroon hover:bg-ja-darkMaroon text-white px-3 py-1.5 rounded-lg font-bold text-xs shadow-xs transition">
+              Contact
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function openFollowupModal(accNo) {
+      currentFollowupCustomer = customers.find(c => c.accountNumber === accNo);
+      if (!currentFollowupCustomer) return;
+
+      document.getElementById('fuModalCust').value = `${currentFollowupCustomer.name} (${currentFollowupCustomer.accountNumber})`;
+      document.getElementById('fuModalStaff').value = activeStaff;
+      document.getElementById('fuModalRemarks').value = '';
+      document.getElementById('followupModal').classList.remove('hidden');
+    }
+
+    function closeFollowupModal() {
+      document.getElementById('followupModal').classList.add('hidden');
+    }
+
+    async function saveFollowupRecord() {
+      if (!currentFollowupCustomer) return;
+
+      const remarks = document.getElementById('fuModalRemarks').value.trim();
+      const status = document.getElementById('fuModalStatus').value;
+      const dateStr = new Date().toLocaleDateString('en-GB');
+
+      let nextDate = "-";
+      if (status === 'WAITING') {
+        const d = new Date();
+        d.setDate(d.getDate() + 2);
+        nextDate = d.toLocaleDateString('en-GB');
+      }
+
+      followups.push({
+        date: dateStr,
+        accountNumber: currentFollowupCustomer.accountNumber,
+        customerName: currentFollowupCustomer.name,
+        staff: activeStaff,
+        remarks: remarks || "Contacted customer",
+        status: status,
+        nextDate: nextDate
+      });
+
+      localStorage.setItem('ja_followups', JSON.stringify(followups));
+
+      // POST FOLLOW-UP TO GOOGLE SHEETS
+      const sheetUrl = localStorage.getItem('ja_sheet_url');
+      if (sheetUrl) {
+        fetch(sheetUrl, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: "LOG_FOLLOWUP",
+            date: dateStr,
+            accountNumber: currentFollowupCustomer.accountNumber,
+            customerName: currentFollowupCustomer.name,
+            staff: activeStaff,
+            remarks: remarks || "Contacted customer",
+            status: status,
+            nextDate: nextDate
+          })
+        });
+      }
+
+      closeFollowupModal();
+      renderFollowups();
+      updateDashboardStats();
+      alert(`Follow-up recorded: ${status === 'WAITING' ? 'Waiting (check in 2 days)' : 'Closed'}`);
+    }
+
+    // 5. EXPORT REAL EXCEL (.xlsx)
+    function exportReportExcel() {
+      const type = document.getElementById('reportTypeSelector').value;
+      let data = [];
+
+      if (type === 'MASTER_LEDGER') {
+        data = customers.map(c => ({
+          "Account Number": c.accountNumber,
+          "Customer Name": c.name,
+          "Mobile": c.mobile,
+          "Scheme Type": c.schemeType,
+          "Tenure (Months)": c.tenureMonths,
+          "Installments Paid": c.installmentsPaid,
+          "Advance Months": c.advanceMonths || 0
+        }));
+      } else if (type === 'FOLLOWUP_LIST') {
+        data = followups.map(f => ({
+          "Date": f.date,
+          "Account Number": f.accountNumber,
+          "Customer Name": f.customerName,
+          "Staff Incharge": f.staff,
+          "Remarks": f.remarks,
+          "Status": f.status,
+          "Recheck Date": f.nextDate
+        }));
+      } else {
+        data = customers.filter(c => c.advanceMonths > 0).map(c => ({
+          "Account Number": c.accountNumber,
+          "Customer Name": c.name,
+          "Mobile": c.mobile,
+          "Scheme Type": c.schemeType,
+          "Advance Months Paid": c.advanceMonths
+        }));
+      }
+
+      if (data.length === 0) {
+        alert("No records available to export for this report.");
+        return;
+      }
+
+      const ws = XLSX.utils.json_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Scheme Report");
+      XLSX.writeFile(wb, `Jos_Alukkas_Tenkasi_${type}_${new Date().toISOString().slice(0,10)}.xlsx`);
+    }
+
+    // 6. EXPORT REAL PDF
+    function exportReportPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const type = document.getElementById('reportTypeSelector').value;
+
+      doc.setFontSize(14);
+      doc.setTextColor(107, 11, 26); // Maroon
+      doc.text("Jos Alukkas India Private Limited – Tenkasi", 14, 15);
+      doc.setFontSize(10);
+      doc.setTextColor(100);
+      doc.text(`Scheme Operations Report: ${type} • Date: ${new Date().toLocaleDateString('en-GB')}`, 14, 22);
+
+      let head = [];
+      let body = [];
+
+      if (type === 'MASTER_LEDGER') {
+        head = [["Account No", "Customer Name", "Mobile", "Scheme", "Paid", "Tenure"]];
+        body = customers.map(c => [c.accountNumber, c.name, c.mobile, c.schemeType, c.installmentsPaid, c.tenureMonths + ' Mos']);
+      } else if (type === 'FOLLOWUP_LIST') {
+        head = [["Date", "Account No", "Customer Name", "Staff", "Status", "Remarks"]];
+        body = followups.map(f => [f.date, f.accountNumber, f.customerName, f.staff, f.status, f.remarks]);
+      } else {
+        head = [["Account No", "Customer Name", "Mobile", "Scheme", "Advance Months"]];
+        body = customers.filter(c => c.advanceMonths > 0).map(c => [c.accountNumber, c.name, c.mobile, c.schemeType, `+${c.advanceMonths} Months`]);
+      }
+
+      if (body.length === 0) {
+        alert("No records available to export.");
+        return;
+      }
+
+      doc.autoTable({
+        startY: 28,
+        head: head,
+        body: body,
+        theme: 'grid',
+        headStyles: { fillColor: [107, 11, 26] }
+      });
+
+      doc.save(`Jos_Alukkas_Tenkasi_${type}.pdf`);
+    }
+
+    // 7. SETTINGS & INITIAL DATA PULL
+    function saveSettings() {
+      const url = document.getElementById('settingsSheetUrl').value.trim();
+      localStorage.setItem('ja_sheet_url', url);
+      const st = document.getElementById('settingsStatusText');
+      st.innerText = "✅ Google Apps Script Web App URL saved successfully!";
+      st.classList.remove('hidden');
+    }
+
+    async function syncWithGoogleSheet() {
+      const url = localStorage.getItem('ja_sheet_url');
+      if (!url) {
+        alert("Please paste your Google Apps Script Web App URL first.");
+        return;
+      }
+
+      const btn = document.getElementById('btnSyncNow');
+      btn.innerText = "Pulling Data...";
+      btn.disabled = true;
+
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (data.customers && data.customers.length > 0) {
+          customers = data.customers.map(c => ({
+            accountNumber: c["Account Number"],
+            name: c["Customer Name"],
+            mobile: c["Mobile"],
+            schemeType: c["Scheme Type"],
+            tenureMonths: parseInt(c["Tenure Months"]) || 11,
+            installmentsPaid: parseInt(c["Installments Paid"]) || 1,
+            advanceMonths: parseInt(c["Advance Months"]) || 0
+          }));
+          localStorage.setItem('ja_customers', JSON.stringify(customers));
+        }
+
+        if (data.staff && data.staff.length > 0) {
+          staffMembers = data.staff.map(s => ({
+            name: s["Staff Name"],
+            role: s["Role"],
+            status: s["Status"],
+            dateAdded: s["Date Added"]
+          }));
+          localStorage.setItem('ja_staff', JSON.stringify(staffMembers));
+          populateStaffDropdown();
+          renderStaffTable();
+        }
+
+        updateDashboardStats();
+        renderCustomerMaster();
+        renderFollowups();
+
+        alert(`✅ Connection verified! Loaded ${customers.length} customer records and ${staffMembers.length} staff members directly from Google Sheets.`);
+      } catch (err) {
+        alert("Error connecting to Google Sheets. Verify Web App URL access is set to 'Anyone'. Error: " + err);
+      } finally {
+        btn.innerText = "🔄 Test Connection & Pull Data";
+        btn.disabled = false;
+      }
+    }
+
+    // Run Startup on load
+    init();
+  </script>
+</body>
+</html>
